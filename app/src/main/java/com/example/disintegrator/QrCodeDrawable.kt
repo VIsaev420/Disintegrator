@@ -8,7 +8,7 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 
-class QrCodeDrawable(qrCodeViewModel: QrCodeViewModel) : Drawable() {
+class QrCodeDrawable(private val qrCodeViewModel: QrCodeViewModel) : Drawable() {
     private val boundingRectPaint = Paint().apply {
         style = Paint.Style.STROKE
         color = Color.YELLOW
@@ -28,7 +28,6 @@ class QrCodeDrawable(qrCodeViewModel: QrCodeViewModel) : Drawable() {
         textSize = 36F
     }
 
-    private val qrCodeViewModel = qrCodeViewModel
     private val contentPadding = 25
     private var textWidth = contentTextPaint.measureText(qrCodeViewModel.qrContent).toInt()
 
@@ -62,6 +61,8 @@ class QrCodeDrawable(qrCodeViewModel: QrCodeViewModel) : Drawable() {
         contentTextPaint.colorFilter = colorFilter
     }
 
-    @Deprecated("Deprecated in Java")
+    @Deprecated("Deprecated in Java",
+        ReplaceWith("PixelFormat.TRANSLUCENT", "android.graphics.PixelFormat")
+    )
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT
 }

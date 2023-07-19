@@ -1,9 +1,7 @@
 package com.example.disintegrator
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -41,7 +39,7 @@ class ScannerActivityView : AppCompatActivity() {
         setContentView(viewBinding.root)
 
         if (allPermissionsGranted()) {
-            startCamera();
+            startCamera()
             Toast.makeText(this, "start camera", Toast.LENGTH_LONG).show()
         } else {
             ActivityCompat.requestPermissions(
@@ -53,16 +51,20 @@ class ScannerActivityView : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray) {
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this,
+                Toast.makeText(
+                    this,
                     "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             }
         }
@@ -75,9 +77,7 @@ class ScannerActivityView : AppCompatActivity() {
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            baseContext, it
-        ) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun startCamera() {
@@ -91,31 +91,33 @@ class ScannerActivityView : AppCompatActivity() {
 
         cameraController.setImageAnalysisAnalyzer(
             ContextCompat.getMainExecutor(this),
-            MlKitAnalyzer(
-                listOf(barcodeScanner),
-                COORDINATE_SYSTEM_VIEW_REFERENCED,
-                ContextCompat.getMainExecutor(this)
-            ) { result: MlKitAnalyzer.Result? ->
-                val barcodeResults = result?.getValue(barcodeScanner)
-                if ((barcodeResults == null) ||
-                    (barcodeResults.size == 0) ||
-                    (barcodeResults.first() == null)
-                ) {
-                    previewView.overlay.clear()
-                    previewView.setOnTouchListener { _, _ -> false }
-                    return@MlKitAnalyzer
-                }
-
-                val qrCodeViewModel = QrCodeViewModel(barcodeResults[0])
-                val qrCodeDrawable = QrCodeDrawable(qrCodeViewModel)
-
-                previewView.setOnTouchListener(qrCodeViewModel.qrCodeTouchCallback)
-                previewView.overlay.clear()
-                previewView.overlay.add(qrCodeDrawable)
-            }
+            createMLKitAnalyzer(previewView)
         )
 
         cameraController.bindToLifecycle(this)
         previewView.controller = cameraController
+    }
+
+    private fun createMLKitAnalyzer(previewView: PreviewView) = MlKitAnalyzer(
+        listOf(barcodeScanner),
+        COORDINATE_SYSTEM_VIEW_REFERENCED,
+        ContextCompat.getMainExecutor(this)
+    ) { result: MlKitAnalyzer.Result? ->
+        val barcodeResults = result?.getValue(barcodeScanner)
+        if ((barcodeResults == null) ||
+            (barcodeResults.size == 0) ||
+            (barcodeResults.first() == null)
+        ) {
+            previewView.overlay.clear()
+            previewView.setOnTouchListener { _, _ -> false }
+            return@MlKitAnalyzer
+        }
+
+        val qrCodeViewModel = QrCodeViewModel(barcodeResults[0])
+        val qrCodeDrawable = QrCodeDrawable(qrCodeViewModel)
+
+        previewView.setOnTouchListener(qrCodeViewModel.qrCodeTouchCallback)
+        previewView.overlay.clear()
+        previewView.overlay.add(qrCodeDrawable)
     }
 }
